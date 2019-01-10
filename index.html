@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script src='node_modules/jquery/dist/jquery.min.js'></script>
+    <link rel="stylesheet" href='node_modules/bootstrap/dist/css/bootstrap.min.css'>
+    <link rel="stylesheet" href='style.css'>
+</head>
+
+<body class="container">
+
+    <h1>Search Country</h1>
+    <br>
+    <form>
+        <div class="form-group">
+            <button type="submit" class="btn btn-primary" id="all">All countries</button>
+        </div>
+        <div class="form-group">
+            <label for="enterCountry" class="sr-only">Country</label>
+            <input type="text" class="form-control col-sm-3" id="enterCountry" placeholder="enter country">
+        </div>
+        <button type="submit" class="btn btn-primary" id="oneCountry">Get country</button>
+    </form>
+
+    <div class='row' id='countries'>
+
+    </div>
+
+    <script>
+
+        $(document).ready(function () {
+
+            $("#all").click(function (e) {
+                e.preventDefault();
+                $("#countries").html('');
+                $('#enterCountry').val('');
+                // let url = 'demo.json';
+                let url = 'http://restcountries.eu/rest/v2/all';
+                getdata(url, function (d) {
+                    for (let i = 0; i < d.length; i++) {
+                        buildHtml(d[i]);
+                    }
+                })
+            });
+
+            $("#oneCountry").click(function (e) {
+                e.preventDefault();
+                $("#countries").html('');
+                let url = 'http://restcountries.eu/rest/v2/name/' + $("#enterCountry").val();
+                getdata(url, function (d) {
+                    for (let i = 0; i < d.length; i++) {
+                        buildHtml(d[i]);
+                    }
+                })
+            });
+
+            function buildHtml(country) {
+                let currencies = JSON.stringify(country.currencies);
+                let templateCountry = `
+                        <div class='col-sm-12' id='country'>
+                            <div class='row'>
+                                <div class='col-sm-6'>
+                                    <img class='img-fluid' src={{flag}} alt="flag">
+                                </div>
+                                <h3 class='col-sm-6'>
+                                    <br>
+                                    <div>Name: {{name}}</div>
+                                    <br>
+                                    <div>Top Level Domain: {{topLevelDomain}}</div>
+                                    <br>
+                                    <div>Capital: {{capital}}</div>
+                                    <br>
+                                    <div>Currencies: {{currencies}}</div>
+                                </h3>
+                            </div>
+                        </div>
+                        `
+                templateCountry = templateCountry.replace('{{name}}', country.name);
+                templateCountry = templateCountry.replace('{{topLevelDomain}}', country.topLevelDomain[0]);
+                templateCountry = templateCountry.replace('{{capital}}', country.capital);
+                templateCountry = templateCountry.replace('{{currencies}}', currencies);
+                templateCountry = templateCountry.replace('{{flag}}', country.flag);
+                $("#countries").append(templateCountry);
+            }
+
+            function getdata(url, callback) {
+
+                $.ajax({
+                    url: url + '?fields=name;capital;currencies;topLevelDomain;flag',
+                    method: 'GET'
+                }).done(function (d) {
+                    if (typeof d === 'string')
+                        d = JSON.parse(d);
+                    console.log(d);
+                    callback(d);
+                }).fail(function (e) {
+                    if (e.status === 404)
+                        alert('The country not found!');
+                })
+            }
+        })
+
+    </script>
+</body>
+
+</html>

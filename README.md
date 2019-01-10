@@ -1,0 +1,1 @@
+Use ajax to displays countries with different characteristics.
